@@ -29,14 +29,55 @@
     </div>
 
 <script>
-  const msg = new SpeechSynthesisUtterance();
-  let voices = [];
+  const msg = window.speechSynthesis;
   const voicesDropdown = document.querySelector('[name="voice"]');
   const options = document.querySelectorAll('[type="range"], [name="text"]');
   const speakButton = document.querySelector('#speak');
   const stopButton = document.querySelector('#stop');
 
   //Your code goes here
+  let voices;
+
+  function loadVoices() {
+  voices = msg.getVoices();
+  for(let i = 0; i < voices.length; i++){
+    const option = document.createElement('option');
+    option.textContent = `${voices[i].name} ${voices[i].lang}`;
+    option.value = i;
+    voicesDropdown.appendChild(option);
+  }
+}
+
+  if ("onvoiceschanged" in msg) {
+    msg.onvoiceschanged = loadVoices;
+  } else {
+    loadVoices();
+  }
+
+  function speak(voice){
+    if(msg.speaking){
+        msg.cancel();
+      } 
+	  const utterThis = new SpeechSynthesisUtterance(options[2].value);
+    utterThis.voice = voices[voice];
+    utterThis.rate = options[0].value;
+    utterThis.pitch = options[1].value;
+	  msg.speak(utterThis);
+  }
+
+  voicesDropdown.addEventListener('change',()=>{
+      speak(voicesDropdown.value);
+  })
+
+  speakButton.addEventListener('click',(e)=>{
+	  e.preventDefault();
+    if(options[2].value == '') return;
+    if(!voicesDropdown.value || voicesDropdown.value == ''){
+      alert("Selecte voice first");
+    }else{
+      speak(voicesDropdown.value);
+    }
+  });
 </script>
 
 </body>
